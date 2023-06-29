@@ -1,11 +1,11 @@
 import os
 
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
+import streamlit as st
 
-load_dotenv()
-_ = 'd07c55ffe0e94ecee92244f0922fb6216808'
-apikey = "18cea8004848f339d14dd509a16e753e"
-insttoken = "aa8087d5506a067fa3e1c2761628f450"
+_ = st.secrets["NCBI_API_KEY"]
+apikey = st.secrets["X_ELS_APIKey"]
+insttoken = st.secrets["X_ELS_Insttoken"]
 
 import pandas as pd
 import pubmed_parser as pp

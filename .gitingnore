@@ -1,0 +1,6 @@
+.streamlit
+.env
+dump.json
+logs
+__pycache__
+
