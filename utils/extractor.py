@@ -53,8 +53,6 @@ class Extractor:
                 [data_pubmed, pd.DataFrame(dicts_out)], ignore_index=True
             )
 
-        data_pubmed.to_csv("data/csv/pubmed_data.csv")
-
         print("PubMed extraction done!")
         return data_pubmed
 
