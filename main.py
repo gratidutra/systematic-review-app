@@ -5,6 +5,8 @@ from utils import extractor
 from utils._streamlit import basic_search
 from utils._streamlit import advanced_search
 from utils._streamlit import unify_dfs
+import pandas as pd
+from io import BytesIO
 
 
 def main():
@@ -85,9 +87,22 @@ def main():
                     st.error("Stopped")
 
         # UNIFICA AS TABELAS
-        st.session_state.dataframes["unified_df"] = unify_dfs.unify(
-            st.session_state.unify_parameters
-        )
+        unified_df = unify_dfs.unify(st.session_state.unify_parameters)
+        st.session_state.dataframes["unified_df"] = unified_df
+
+        # Convert to Excel
+        excel_file = BytesIO()
+        with pd.ExcelWriter(excel_file, engine='xlsxwriter') as writer:
+            unified_df.to_excel(writer, index=False, sheet_name='Sheet1')
+            worksheet = writer.sheets['Sheet1']
+
+            for i, column in enumerate(unified_df.columns):
+                column_width = max(unified_df[column].astype(str).map(len).max(), len(column))
+                worksheet.set_column(i, i, column_width)
+
+        excel_file.seek(0)
+        st.session_state.dataframes["excel_df"] = excel_file
+
 
     # Renderiza os downloads
     if not globals.stop_extraction:
@@ -97,12 +112,22 @@ def main():
             for df in st.session_state.dataframes:
                 if df == "unified_df":
                     st.sidebar.write("Unified results")
-                st.sidebar.download_button(
-                    label=f"Download {df} as CSV",
-                    data=convert_df(st.session_state.dataframes[df]),
-                    file_name=f"{df}.csv",
-                    mime="text/csv",
-                )
+
+                if df == "excel_df":
+                    st.sidebar.download_button(
+                        label=f"Download {df} for Excel",
+                        data=st.session_state.dataframes[df],
+                        file_name=f"{df}.xlsx",
+                        mime=f"text/xlsx",
+                    )
+
+                else:
+                    st.sidebar.download_button(
+                        label=f"Download {df} as CSV",
+                        data=convert_df(st.session_state.dataframes[df]),
+                        file_name=f"{df}.csv",
+                        mime="text/csv",
+                    )
 
             # Show unified dataframes
             st.dataframe(st.session_state.dataframes["unified_df"])
